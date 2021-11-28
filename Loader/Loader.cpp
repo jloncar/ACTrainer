@@ -93,6 +93,8 @@ int main()
         LOGERR("Unable to spawn thread.");
     }
 
+    // Should I free dllPathAddr ??
+
     CloseHandle(hThread);
     CloseHandle(hProcess);
 }

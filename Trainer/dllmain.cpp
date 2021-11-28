@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "Trainer.h"
 
 DWORD WINAPI TrainerThread(HMODULE hModule)
@@ -7,8 +6,9 @@ DWORD WINAPI TrainerThread(HMODULE hModule)
 
     while (t.Tick())
     {
-        Sleep(100);
     }
+
+    t.Cleanup();
 
     return 0;
 }
