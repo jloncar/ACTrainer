@@ -1,12 +1,6 @@
 #include "pch.h"
 #include "Trainer.h"
 
-// Debugging DLL:
-// Right click DLL project, Debug, Step into new Instance
-// Make sure debugging props (attach, emit debug info) are set properly
-// https://docs.microsoft.com/en-us/visualstudio/debugger/debugging-dll-projects?view=vs-2022
-// https://docs.microsoft.com/en-us/visualstudio/debugger/debug-multiple-processes?view=vs-2022
-
 DWORD WINAPI TrainerThread(HMODULE hModule)
 {
     Trainer t{ hModule };

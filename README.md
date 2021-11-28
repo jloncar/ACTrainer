@@ -10,6 +10,8 @@
 - Linker -> Debugging -> Debuggable Assembly: Yes
 - Attach debugger after DLL is injected:
 -- Right click "Trainer" project, "Debug" and "Step into new instance"
+- https://docs.microsoft.com/en-us/visualstudio/debugger/debugging-dll-projects?view=vs-2022
+- https://docs.microsoft.com/en-us/visualstudio/debugger/debug-multiple-processes?view=vs-2022
 
 ## Issues
 - Special characters support - making sure to use wstring
