@@ -2,13 +2,14 @@
 
 DWORD WINAPI TrainerThread(HMODULE hModule)
 {
-    Trainer t{ hModule };
+    Trainer* t = new Trainer(hModule);
 
-    while (t.Tick())
+    while (t->Tick())
     {
+        continue;
     }
 
-    t.Cleanup();
+    delete t;
 
     return 0;
 }

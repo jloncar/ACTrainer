@@ -45,6 +45,12 @@
     <ClInclude Include="imgui\imgui_impl_win32.h">
       <Filter>imgui</Filter>
     </ClInclude>
+    <ClInclude Include="Overlay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -73,6 +79,9 @@
     </ClCompile>
     <ClCompile Include="imgui\imgui_impl_win32.cpp">
       <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Overlay.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
