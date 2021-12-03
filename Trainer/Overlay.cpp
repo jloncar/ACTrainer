@@ -7,32 +7,34 @@ static ID3D11DeviceContext* g_pd3dDeviceContext = NULL;
 static IDXGISwapChain* g_pSwapChain = NULL;
 static ID3D11RenderTargetView* g_mainRenderTargetView = NULL;
 
-void Overlay::Init(Config* config, HMODULE& hModule, HWND& parent)
+void Overlay::CreateAndBindWindow(const wchar_t* title, HMODULE& hModule, HWND& parentWindow)
+{
+    m_WinClass = { sizeof(WNDCLASSEX), ACS_TRANSPARENT, WndProc, 0L, 0L, hModule, NULL, NULL, NULL, NULL, title, NULL };
+    ::RegisterClassEx(&m_WinClass);
+    m_Window = ::CreateWindow(m_WinClass.lpszClassName, title, WS_POPUP | WS_EX_TOPMOST | WS_EX_TRANSPARENT, 0, 0, 500, 500, parentWindow, NULL, m_WinClass.hInstance, NULL);
+    SetLayeredWindowAttributes(m_Window, 0, 1.0f, LWA_ALPHA);
+    SetLayeredWindowAttributes(m_Window, 0, RGB(0, 0, 0), LWA_COLORKEY);
+    MARGINS margins = { -1 };
+    DwmExtendFrameIntoClientArea(m_Window, &margins);
+}
+
+void Overlay::Init(Config* config, HMODULE& hModule, HWND& parentWindow)
 {
     // Set state
-    clear_color = ImVec4(0.f, 0.f, 0.f, 0.00f);
     m_Config = config;
-
-    wc = { sizeof(WNDCLASSEX), ACS_TRANSPARENT, WndProc, 0L, 0L, hModule, NULL, NULL, NULL, NULL, _T("Trainer"), NULL };
-    ::RegisterClassEx(&wc);
-    //  WS_POPUP | WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE
-    hwnd = ::CreateWindow(wc.lpszClassName, _T("Trainer"), WS_POPUP | WS_EX_TOPMOST | WS_EX_TRANSPARENT, 0, 0, 500, 500, parent, NULL, wc.hInstance, NULL);
-    SetLayeredWindowAttributes(hwnd, 0, 1.0f, LWA_ALPHA);
-    SetLayeredWindowAttributes(hwnd, 0, RGB(0, 0, 0), LWA_COLORKEY);
-    MARGINS margins = { -1 };
-    DwmExtendFrameIntoClientArea(hwnd, &margins);
+    this->CreateAndBindWindow(L"Trainer", hModule, parentWindow);
 
     // Initialize Direct3D
-    if (!CreateDeviceD3D(hwnd))
+    if (!CreateDeviceD3D(m_Window))
     {
         CleanupDeviceD3D();
-        ::UnregisterClass(wc.lpszClassName, wc.hInstance);
+        ::UnregisterClass(m_WinClass.lpszClassName, m_WinClass.hInstance);
         return;
     }
 
     // Show the window
-    ::ShowWindow(hwnd, SW_SHOWDEFAULT);
-    ::UpdateWindow(hwnd);
+    ::ShowWindow(m_Window, SW_SHOWDEFAULT);
+    ::UpdateWindow(m_Window);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -46,16 +48,22 @@ void Overlay::Init(Config* config, HMODULE& hModule, HWND& parent)
     //ImGui::StyleColorsClassic();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplWin32_Init(hwnd);
+    ImGui_ImplWin32_Init(m_Window);
     ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
 }
 
+void Overlay::HookNavigation() {
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.KeysDown[VK_DOWN] = GetAsyncKeyState(VK_DOWN);
+    io.KeysDown[VK_UP] = GetAsyncKeyState(VK_UP);
+    io.KeysDown[VK_SPACE] = GetAsyncKeyState(VK_RETURN);
+}
+
 bool Overlay::Tick() {
-    // Poll and handle messages (inputs, window resize, etc.)
-  // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-  // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-  // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-  // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+
+    this->HookNavigation();
+
     MSG msg;
     while (::PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE))
     {
@@ -96,6 +104,7 @@ bool Overlay::Tick() {
 
         if (ImGui::CollapsingHeader("Core", ImGuiTreeNodeFlags_DefaultOpen))
         {
+            ImGui::Checkbox("Freeze HP", &m_Config->b_freezeHp);
             ImGui::Checkbox("Infinite ammo", &m_Config->b_infiniteAmmo);
             ImGui::Checkbox("Invulnerable", &m_Config->b_invulnerable);
         }
@@ -109,16 +118,14 @@ bool Overlay::Tick() {
     ImGui::End();
 
     // Rendering
-    const float clear_color_with_alpha[4] = { clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w };
+    const float clear_color_with_alpha[4] = { .0f, .0f, .0f, .0f };
     g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, NULL);
     g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, clear_color_with_alpha);
     ImGui::Render();
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
     g_pSwapChain->Present(1, 0); // Present with vsync
-    //g_pSwapChain->Present(0, 0); // Present without vsync
 
-    // Continue loop
     return true;
 }
 
@@ -129,13 +136,12 @@ void Overlay::Cleanup()
     ImGui::DestroyContext();
 
     CleanupDeviceD3D();
-    ::DestroyWindow(hwnd);
-    ::UnregisterClass(wc.lpszClassName, wc.hInstance);
+    ::DestroyWindow(m_Window);
+    ::UnregisterClass(m_WinClass.lpszClassName, m_WinClass.hInstance);
 
 }
 
 // Helper functions
-
 bool CreateDeviceD3D(HWND hWnd)
 {
     // Setup swap chain
@@ -187,6 +193,8 @@ void CleanupRenderTarget()
     if (g_mainRenderTargetView) { g_mainRenderTargetView->Release(); g_mainRenderTargetView = NULL; }
 }
 
+
+// Enables imgui to recieve events such as mouse clicks/keyboard and react to it
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

@@ -13,6 +13,7 @@ void CreateRenderTarget();
 void CleanupRenderTarget();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+
 class Overlay
 {
 public:
@@ -21,9 +22,11 @@ public:
 	void Cleanup();
 
 private:
-	WNDCLASSEX wc;
-	HWND hwnd;
-	ImVec4 clear_color;
+	WNDCLASSEX m_WinClass;
+	HWND m_Window;
 	Config* m_Config;
+
+	void CreateAndBindWindow(const wchar_t* title, HMODULE& hModule, HWND& parentWindow);
+	void HookNavigation();
 };
 

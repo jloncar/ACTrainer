@@ -1,6 +1,6 @@
 #include "Trainer.h"
 
-Trainer::Trainer(HMODULE& hModule)
+Trainer::Trainer(HMODULE& hModule, const wchar_t* gameWindowTitle)
 {
     m_Config = new Config();
     m_Config->b_invulnerable = false;
@@ -8,17 +8,29 @@ Trainer::Trainer(HMODULE& hModule)
     m_Config->b_noRecoil = false;
     m_Config->b_aimbot = false;
 
-    HWND window = FindWindow(NULL, L"AssaultCube");
+    m_GameWindow = FindWindow(NULL, gameWindowTitle);
 
     m_Overlay = new Overlay();
-    m_Overlay->Init(m_Config, hModule, window);
+    m_Overlay->Init(m_Config, hModule, m_GameWindow);
+
 }
-	
+
+
 bool Trainer::Tick() {
+    LocalPlayer player;
+
     if (!m_Overlay->Tick())
     {
         return false;
     }
+    
+
+    if (m_Config->b_freezeHp)
+    {
+        // Write to health
+        (*player.hp) = 999;
+    }
+
     return true;
 }
 

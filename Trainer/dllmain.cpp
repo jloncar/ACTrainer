@@ -2,7 +2,7 @@
 
 DWORD WINAPI TrainerThread(HMODULE hModule)
 {
-    Trainer* t = new Trainer(hModule);
+    Trainer* t = new Trainer(hModule, L"AssaultCube");
 
     while (t->Tick())
     {

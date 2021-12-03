@@ -24,3 +24,8 @@
 	- Properties -> C / C++ -> General -> Additional Include Directories -> add "imgui"
 	- Disable precompiled headers! https://github.com/ocornut/imgui/issues/2781
 	- Add d3d11.lib https://stackoverflow.com/questions/16182175/d3d11createdeviceandswapchain-unresolved-external/18089518
+- Hooking keyboard events
+	- Imgui is not receiving keyboard events when in game, and if it does - it also passes those events to game
+	- Trainer should prevent game from recieving keyboard events
+	- https://stackoverflow.com/questions/33024712/call-setwindowshookex-with-method-defined-in-header-file/33028459#33028459
+	- https://docs.microsoft.com/en-us/windows/win32/inputdev/using-raw-input

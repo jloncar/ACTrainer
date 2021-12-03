@@ -93,7 +93,8 @@ int main()
         LOGERR("Unable to spawn thread.");
     }
 
-    // Should I free memory allocated by VirtualAllocEx ??
+    // Nope:
+    // VirtualFreeEx(hProcess, dllPathAddr, 0, MEM_RELEASE);
 
     CloseHandle(hThread);
     CloseHandle(hProcess);

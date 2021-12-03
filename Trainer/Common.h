@@ -1,6 +1,7 @@
 #pragma once
 
 struct Config {
+	bool b_freezeHp;
 	bool b_invulnerable;
 	bool b_infiniteAmmo;
 	bool b_noRecoil;

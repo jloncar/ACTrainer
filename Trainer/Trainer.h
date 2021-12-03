@@ -6,16 +6,18 @@
 #include <tchar.h>
 #include "Common.h"
 #include "Overlay.h"
+#include "LocalPlayer.h"
 
 class Trainer
 {
 private:
 	Config* m_Config;
 	Overlay* m_Overlay;
+	HWND m_GameWindow;
+
 public:
-		Trainer(HMODULE& hModule);
+		Trainer(HMODULE& hModule, const wchar_t* gameWindowTitle);
 		bool Tick();
 		~Trainer();
-
 };
 
