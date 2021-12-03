@@ -23,12 +23,18 @@ bool Trainer::Tick() {
     {
         return false;
     }
-    
+
 
     if (m_Config->b_freezeHp)
     {
         // Write to health
-        (*player.hp) = 999;
+        (*player.hp) = 420;
+    }
+
+    if (m_Config->b_infiniteAmmo)
+    {
+        // Write to health
+        (*player.ammo) = 69;
     }
 
     return true;
