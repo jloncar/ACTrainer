@@ -13,17 +13,25 @@ Trainer::Trainer(HMODULE& hModule, const wchar_t* gameWindowTitle)
     m_Overlay = new Overlay();
     m_Overlay->Init(m_Config, hModule, m_GameWindow);
 
+
 }
 
 
 bool Trainer::Tick() {
     LocalPlayer player;
 
-    if (!m_Overlay->Tick())
-    {
-        return false;
-    }
+    static bool b_invulnerablePatched;
 
+    if (m_Config->b_invulnerable && !b_invulnerablePatched)
+    {
+        player.PatchInvulnerable(true);
+        b_invulnerablePatched = true;
+    }
+    if (!m_Config->b_invulnerable && b_invulnerablePatched)
+    {
+        player.PatchInvulnerable(false);
+        b_invulnerablePatched = false;
+    }
 
     if (m_Config->b_freezeHp)
     {
@@ -35,6 +43,13 @@ bool Trainer::Tick() {
     {
         // Write to health
         (*player.ammo) = 69;
+    }
+
+
+    if (!m_Overlay->Tick())
+    {
+        // UI Error
+        return false;
     }
 
     return true;
