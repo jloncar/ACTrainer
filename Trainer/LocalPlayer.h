@@ -3,9 +3,11 @@
 #include "Memory.h"
 
 struct LocalPlayer {
+private:
 	uintptr_t p_baseModule;
 	uintptr_t p_localPlayer;
 
+public:
 	LocalPlayer();
 
 	int* hp;

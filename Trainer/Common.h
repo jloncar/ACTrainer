@@ -1,5 +1,9 @@
 #pragma once
 
+enum TRAINER_UI_MSG {
+	ADD_GRANADE = 1
+};
+
 struct Config {
 	bool b_freezeHp;
 	bool b_invulnerableEveryone;

@@ -9,7 +9,6 @@ LocalPlayer::LocalPlayer() : p_baseModule(NULL), p_localPlayer(NULL), ammo(nullp
 		return;
 	}
 
-
 	p_baseModule = (uintptr_t)GetModuleHandle(L"ac_client.exe");
 	if (p_baseModule == NULL)
 	{
@@ -23,6 +22,8 @@ LocalPlayer::LocalPlayer() : p_baseModule(NULL), p_localPlayer(NULL), ammo(nullp
 		return;
 	}
 
+	// Resolve variables
+	
 	hp = reinterpret_cast<int*>(p_localPlayer + 0xF8);
 
 	std::vector<int> ammoOffsets  = { 0x374 , 0x14 , 0x0 };

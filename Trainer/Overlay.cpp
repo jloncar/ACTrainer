@@ -103,7 +103,7 @@ bool Overlay::Tick(int& messageCode) {
             ImGui::Checkbox("No Recoil", &m_Config->b_noRecoil);
             ImGui::Checkbox("Aimbot", &m_Config->b_aimbot);
             if (ImGui::Button("Add a granade"))
-                messageCode = 1;
+                messageCode = TRAINER_UI_MSG::ADD_GRANADE;
         }
         if (ImGui::CollapsingHeader("Bot only", ImGuiTreeNodeFlags_DefaultOpen))
         {

@@ -67,11 +67,13 @@ bool Trainer::Tick() {
     }
 
     // Process message
-    if (messageCode == 1)
+    switch (messageCode)
     {
+    case TRAINER_UI_MSG::ADD_GRANADE:
         player.AddGranade();
-        messageCode = 0;
+        break;
     }
+    messageCode = 0;
 
     return true;
 }
