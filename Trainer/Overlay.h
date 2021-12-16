@@ -18,7 +18,7 @@ class Overlay
 {
 public:
 	void Init(Config* config, HMODULE& hModule, HWND& parent);
-	bool Tick();
+	bool Tick(int& message);
 	void Cleanup();
 
 private:

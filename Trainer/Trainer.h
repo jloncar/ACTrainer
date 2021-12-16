@@ -11,7 +11,7 @@
 #include "LocalPlayer.h"
 
 enum Patches {
-	INVULNERABLE
+	INVULNERABLE_EVERYONE
 };
 
 class Trainer

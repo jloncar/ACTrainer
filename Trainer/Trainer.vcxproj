@@ -165,6 +165,7 @@
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="LocalPlayer.h" />
+    <ClInclude Include="Naked.h" />
     <ClInclude Include="Overlay.h" />
     <ClInclude Include="Trainer.h" />
   </ItemGroup>

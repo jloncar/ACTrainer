@@ -41,11 +41,9 @@ void Overlay::Init(Config* config, HMODULE& hModule, HWND& parentWindow)
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
 
     // Setup Platform/Renderer backends
     ImGui_ImplWin32_Init(m_Window);
@@ -55,12 +53,12 @@ void Overlay::Init(Config* config, HMODULE& hModule, HWND& parentWindow)
 void Overlay::HookNavigation() {
     ImGuiIO& io = ImGui::GetIO();
 
-    io.KeysDown[VK_DOWN] = GetAsyncKeyState(VK_DOWN);
-    io.KeysDown[VK_UP] = GetAsyncKeyState(VK_UP);
-    io.KeysDown[VK_SPACE] = GetAsyncKeyState(VK_RETURN);
+    io.KeysDown[VK_DOWN] = GetAsyncKeyState(VK_NUMPAD2);
+    io.KeysDown[VK_UP] = GetAsyncKeyState(VK_NUMPAD9);
+    io.KeysDown[VK_SPACE] = GetAsyncKeyState(VK_NUMPAD5);
 }
 
-bool Overlay::Tick() {
+bool Overlay::Tick(int& messageCode) {
 
     this->HookNavigation();
 
@@ -99,19 +97,19 @@ bool Overlay::Tick() {
     ImGui::SetNextWindowBgAlpha(0.9f); // Transparent background
     if (ImGui::Begin("Trainer", NULL, window_flags))
     {
-        ImGui::Text("Use keyboard to navigate");
-        ImGui::Spacing();
-
         if (ImGui::CollapsingHeader("Core", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::Checkbox("Freeze HP", &m_Config->b_freezeHp);
             ImGui::Checkbox("Infinite ammo", &m_Config->b_infiniteAmmo);
-            ImGui::Checkbox("Invulnerable", &m_Config->b_invulnerable);
-        }
-        if (ImGui::CollapsingHeader("Advanced", ImGuiTreeNodeFlags_DefaultOpen))
-        {
             ImGui::Checkbox("No Recoil", &m_Config->b_noRecoil);
             ImGui::Checkbox("Aimbot", &m_Config->b_aimbot);
+            if (ImGui::Button("Add a granade"))
+                messageCode = 1;
+        }
+        if (ImGui::CollapsingHeader("Bot only", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::Checkbox("Freeze HP", &m_Config->b_freezeHp);
+            ImGui::Checkbox("Invulnerable all", &m_Config->b_invulnerableEveryone);
+            ImGui::Checkbox("Invulnerable self", &m_Config->b_invulnerableSelf);
         }
         
     }

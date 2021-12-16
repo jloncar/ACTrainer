@@ -3,7 +3,7 @@
 Trainer::Trainer(HMODULE& hModule, const wchar_t* gameWindowTitle)
 {
     m_Config = new Config();
-    m_Config->b_invulnerable = false;
+    m_Config->b_invulnerableEveryone = false;
     m_Config->b_infiniteAmmo = false;
     m_Config->b_noRecoil = false;
     m_Config->b_aimbot = false;
@@ -20,17 +20,31 @@ Trainer::Trainer(HMODULE& hModule, const wchar_t* gameWindowTitle)
 bool Trainer::Tick() {
     LocalPlayer player;
 
-    static bool b_invulnerablePatched;
+    static bool b_invulnerableEveryonePatched, b_invulnerableSelfPatched;
 
-    if (m_Config->b_invulnerable && !b_invulnerablePatched)
+    int messageCode;
+
+    if (m_Config->b_invulnerableEveryone && !b_invulnerableEveryonePatched)
     {
-        player.PatchInvulnerable(true);
-        b_invulnerablePatched = true;
+        player.PatchInvulnerableEveryone(true);
+        b_invulnerableEveryonePatched = true;
     }
-    if (!m_Config->b_invulnerable && b_invulnerablePatched)
+    if (!m_Config->b_invulnerableEveryone && b_invulnerableEveryonePatched)
     {
-        player.PatchInvulnerable(false);
-        b_invulnerablePatched = false;
+        player.PatchInvulnerableEveryone(false);
+        b_invulnerableEveryonePatched = false;
+    }
+
+
+    if (m_Config->b_invulnerableSelf && !b_invulnerableSelfPatched)
+    {
+        player.PatchInvulnerableSelf(true);
+        b_invulnerableSelfPatched = true;
+    }
+    if (!m_Config->b_invulnerableSelf && b_invulnerableSelfPatched)
+    {
+        player.PatchInvulnerableSelf(false);
+        b_invulnerableSelfPatched = false;
     }
 
     if (m_Config->b_freezeHp)
@@ -46,10 +60,17 @@ bool Trainer::Tick() {
     }
 
 
-    if (!m_Overlay->Tick())
+    if (!m_Overlay->Tick(messageCode))
     {
         // UI Error
         return false;
+    }
+
+    // Process message
+    if (messageCode == 1)
+    {
+        player.AddGranade();
+        messageCode = 0;
     }
 
     return true;
