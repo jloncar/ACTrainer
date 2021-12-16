@@ -1,8 +1,8 @@
 #pragma once
 #include <Windows.h>
 
-DWORD jmpBkInvulnerableSelf;
-DWORD localPlayerAddy;
+DWORD asm_localPlayerAddress;
+DWORD asm_jmpBkInvulnerableSelf;
 
 
 // REPLACES:
@@ -17,7 +17,7 @@ void __declspec(naked) InvulnerableSelfHook()
 {
 	__asm {
 		// Check if target is local player; if it is - don't take dmg.
-		cmp eax, localPlayerAddy
+		cmp eax, asm_localPlayerAddress
 		jne TAKE_DMG
 		retn
 
@@ -27,6 +27,6 @@ void __declspec(naked) InvulnerableSelfHook()
 		mov ebp, esp
 		and esp, 0FFFFFFF8h
 		// Jump back, absolute jump 0xFF
-		jmp jmpBkInvulnerableSelf
+		jmp asm_jmpBkInvulnerableSelf
 	}
 }

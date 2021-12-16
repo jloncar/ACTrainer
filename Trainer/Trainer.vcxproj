@@ -165,6 +165,7 @@
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="LocalPlayer.h" />
+    <ClInclude Include="Memory.h" />
     <ClInclude Include="Naked.h" />
     <ClInclude Include="Overlay.h" />
     <ClInclude Include="Trainer.h" />
@@ -179,6 +180,7 @@
     <ClCompile Include="imgui\imgui_tables.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="LocalPlayer.cpp" />
+    <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Overlay.cpp" />
     <ClCompile Include="Trainer.cpp" />
   </ItemGroup>
