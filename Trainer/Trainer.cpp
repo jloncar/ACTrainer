@@ -12,8 +12,6 @@ Trainer::Trainer(HMODULE& hModule, const wchar_t* gameWindowTitle)
 
     m_Overlay = new Overlay();
     m_Overlay->Init(m_Config, hModule, m_GameWindow);
-
-
 }
 
 

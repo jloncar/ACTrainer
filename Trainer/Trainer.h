@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "Common.h"
 #include "Overlay.h"
+#include "Memory.h"
 #include "LocalPlayer.h"
 
 enum Patches {

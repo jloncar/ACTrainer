@@ -19,7 +19,7 @@ uintptr_t Memory::ResolvePtr(uintptr_t base, std::vector<int> offsets)
 }
 
 
-void Memory::PatchSequence(uintptr_t start, byte* newSequence, unsigned int sequenceSize)
+void Memory::PatchSequence(uintptr_t start, byte* newSequence, unsigned int sequenceSize, byte* oldSequence)
 {
 	DWORD lpflOldProtectVal;
 
@@ -31,7 +31,10 @@ void Memory::PatchSequence(uintptr_t start, byte* newSequence, unsigned int sequ
 
 	for (uintptr_t iterator = start; iterator < start + sequenceSize; iterator++)
 	{
-		*(reinterpret_cast<char*>(iterator)) = newSequence[(iterator - start)];
+		if (oldSequence != nullptr)
+			oldSequence[(iterator - start)] = *(reinterpret_cast<byte*>(iterator));
+
+		*(reinterpret_cast<byte*>(iterator)) = newSequence[(iterator - start)];
 	}
 
 	// TODO Restore VirtualProtect
@@ -82,7 +85,7 @@ uintptr_t Memory::FindSequence(const wchar_t* moduleName, byte* sequence, unsign
 }
 
 
-void Memory::PatchJump(uintptr_t start, void* hookFunction, const size_t sequenceSize)
+void Memory::PatchJump(uintptr_t start, void* hookFunction, const size_t sequenceSize, byte* oldSequence)
 {
 	if (sequenceSize < 5) return;
 
@@ -98,5 +101,35 @@ void Memory::PatchJump(uintptr_t start, void* hookFunction, const size_t sequenc
 	// targetOffset = targetLocation - jumpLocation - jumpSize
 	*(uintptr_t*)(sequence + 1) = (uintptr_t)hookFunction - start - 5;
 
-	PatchSequence(start, sequence, sequenceSize);
+	PatchSequence(start, sequence, sequenceSize, oldSequence);
+}
+
+// Returns Gateway address
+void* Memory::TrampolineHook(uintptr_t start, void* hookFunction, const size_t sequenceSize) {
+	// patch sequenceSize bytes and store them
+	// add jmp to hookFunction instead
+	byte* stolenBytes = (byte*)alloca(sequenceSize);
+
+	PatchJump(start, hookFunction, sequenceSize, stolenBytes);
+	
+	// allocate memory
+	// I don't know why Rake used VirtualAlloc - probably to allocate to separate page
+	// byte* gatewayBytes = (byte*)VirtualAlloc(0, sequenceSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	byte* gatewayBytes = (byte*)malloc(sequenceSize);
+
+	// Copy bytes to new memory
+	memcpy_s(gatewayBytes, sequenceSize, stolenBytes, sequenceSize);
+
+	// append jmp instruction
+	*(gatewayBytes + sequenceSize) = 0xE9; // jmp
+
+	// Jump has to be relative to gateway jumpoff point
+	// current (gateway bytes, gatewayBytes + sequenceSize)
+	// target (start + sequenceSize)
+	// current + x = target
+	// x = target - curent
+	int relative_offset = (start + sequenceSize) - ((uintptr_t)gatewayBytes + sequenceSize) - 5;
+	*((int*)(gatewayBytes + sequenceSize + 1)) = relative_offset;
+
+	return gatewayBytes;
 }
