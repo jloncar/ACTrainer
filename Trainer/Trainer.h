@@ -1,4 +1,5 @@
 #pragma once
+#pragma comment(lib, "OpenGL32.lib")
 
 #define WIN32_LEAN_AND_MEAN
 #include <iostream>
@@ -6,6 +7,7 @@
 #include <tchar.h>
 #include <vector>
 #include <algorithm>
+#include <gl/GL.h>
 #include "Common.h"
 #include "Overlay.h"
 #include "Memory.h"
