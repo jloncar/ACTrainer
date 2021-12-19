@@ -10,7 +10,7 @@
 #include "Common.h"
 #include "Overlay.h"
 #include "Memory.h"
-#include "LocalPlayer.h"
+#include "Game.h"
 
 typedef int(__stdcall* wglSwapBuffersFunction)(HDC hDC);
 
@@ -18,7 +18,7 @@ using namespace Features;
 
 class Trainer
 {
-typedef void(*FeatureCallback)(const Trainer* trainer, Feature* feature, LocalPlayer* player);
+typedef void(*FeatureCallback)(const Trainer* trainer, Feature* feature, Game* game);
 private:
 	Features::Collection* m_Features;
 	std::unordered_map<Features::Feature*, FeatureCallback> m_FeatureCallbacks;

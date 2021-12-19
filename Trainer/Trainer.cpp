@@ -33,7 +33,7 @@ int Trainer::Tick(HDC hdc) {
     SetOpenGLContext(hdc);
 
     // Handle cheats and do the drawing
-    LocalPlayer player;
+    Game game;
 
 
     m_Overlay->HookNavigation();
@@ -42,7 +42,7 @@ int Trainer::Tick(HDC hdc) {
     {
         try {
             FeatureCallback callback = m_FeatureCallbacks.at(feature);
-            callback(this, feature, &player);
+            callback(this, feature, &game);
         } catch (const std::out_of_range& oor) {
             OutputDebugString(L"Unable to find feature.");
             continue;

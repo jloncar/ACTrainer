@@ -1,14 +1,61 @@
 #include "Features.h"
 
+
+void FreezeAmmo(const Trainer* t, Feature* feature, Game* game)
+{
+    if (feature->isEnabled)
+    {
+        *game->localPlayer->ammo = 69;
+    }
+}
+
+void FreezeHealth(const Trainer* t, Feature* feature, Game* game)
+{
+    if (feature->isEnabled)
+    {
+        *game->localPlayer->hp = 420;
+    }
+}
+
+void InvulnerableEveryone(const Trainer* t, Feature* feature, Game* game)
+{
+    if (feature->isEnabled && !feature->isPatched)
+    {
+        game->PatchInvulnerableEveryone(true);
+        feature->isPatched = true;
+    }
+    if (!feature->isEnabled && feature->isPatched)
+    {
+        game->PatchInvulnerableEveryone(false);
+        feature->isPatched = false;
+    }
+}
+
+void InvulnerableSelf(const Trainer* t, Feature* feature, Game* game)
+{
+    if (feature->isEnabled && !feature->isPatched)
+    {
+        game->PatchInvulnerableSelf(true);
+        feature->isPatched = true;
+    }
+    if (!feature->isEnabled && feature->isPatched)
+    {
+        game->PatchInvulnerableSelf(false);
+        feature->isPatched = false;
+    }
+}
+
+
+
 void DrawESP()
 {
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration |
-                                    ImGuiWindowFlags_NoBackground |
-                                    ImGuiWindowFlags_AlwaysAutoResize |
-                                    ImGuiWindowFlags_NoBringToFrontOnFocus |
-                                    ImGuiWindowFlags_NoSavedSettings |
-                                    ImGuiWindowFlags_NoFocusOnAppearing |
-                                    ImGuiWindowFlags_NoInputs;
+        ImGuiWindowFlags_NoBackground |
+        ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoBringToFrontOnFocus |
+        ImGuiWindowFlags_NoSavedSettings |
+        ImGuiWindowFlags_NoFocusOnAppearing |
+        ImGuiWindowFlags_NoInputs;
 
     ImGui::Begin("ESP", nullptr, window_flags);
 
@@ -17,52 +64,7 @@ void DrawESP()
     ImGui::End();
 }
 
-void FreezeAmmo(const Trainer* t, Feature* feature, LocalPlayer* player)
-{
-    if (feature->isEnabled)
-    {
-        *player->ammo = 69;
-    }
-}
-
-void FreezeHealth(const Trainer* t, Feature* feature, LocalPlayer* player)
-{
-    if (feature->isEnabled)
-    {
-        *player->hp = 420;
-    }
-}
-
-void InvulnerableEveryone(const Trainer* t, Feature* feature, LocalPlayer* player)
-{
-    if (feature->isEnabled && !feature->isPatched)
-    {
-        player->PatchInvulnerableEveryone(true);
-        feature->isPatched = true;
-    }
-    if (!feature->isEnabled && feature->isPatched)
-    {
-        player->PatchInvulnerableEveryone(false);
-        feature->isPatched = false;
-    }
-}
-
-void InvulnerableSelf(const Trainer* t, Feature* feature, LocalPlayer* player)
-{
-    if (feature->isEnabled && !feature->isPatched)
-    {
-        player->PatchInvulnerableSelf(true);
-        feature->isPatched = true;
-    }
-    if (!feature->isEnabled && feature->isPatched)
-    {
-        player->PatchInvulnerableSelf(false);
-        feature->isPatched = false;
-    }
-}
-
-
-void ESP(const Trainer* t, Feature* feature, LocalPlayer* player)
+void ESP(const Trainer* t, Feature* feature, Game* game)
 {
    if(feature->isEnabled)
        DrawESP();
