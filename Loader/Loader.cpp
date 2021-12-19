@@ -98,4 +98,5 @@ int main()
 
     CloseHandle(hThread);
     CloseHandle(hProcess);
+    return 0;
 }
