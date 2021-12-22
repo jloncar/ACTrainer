@@ -61,7 +61,7 @@ namespace Game {
 
 
 	struct EntityList {
-		uintptr_t baseAddress;
+		uintptr_t* baseAddress;
 		int* count; // ac_client.exe+0x10F500
 		EntityList(uintptr_t address);// address = ac_client.exe+0x10F4F8
 		std::vector<Player*> All();

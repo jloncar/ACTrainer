@@ -48,6 +48,13 @@ void InvulnerableSelf(const Trainer* t, Feature* feature, Game::Engine* game)
 
 void ESP(const Trainer* t, Feature* feature, Game::Engine* game)
 {
-   if(feature->isEnabled)
-       DrawESP();
+    if (!feature->isEnabled)
+        return;
+
+    for (auto player : game->entities->All())
+    {
+        continue;
+    }
+
+    DrawESP();
 }

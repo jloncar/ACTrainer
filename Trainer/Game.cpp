@@ -9,7 +9,7 @@ Game::Engine::Engine() : baseAddress(NULL), player(NULL), entities(NULL)
 	}
 
 	player = *reinterpret_cast<Player**>(baseAddress + 0x10F4F4);
-	entities = new EntityList(baseAddress + 0x10F4F8);
+	entities = new EntityList(baseAddress);
 }
 
 Game::Engine::~Engine()
@@ -17,10 +17,10 @@ Game::Engine::~Engine()
 	delete entities;
 }
 
-Game::EntityList::EntityList(uintptr_t address)
+Game::EntityList::EntityList(uintptr_t moduleBaseAddress)
 {
-	baseAddress = address;
-	count = reinterpret_cast<int*>(address + 0x10F500);
+	baseAddress = reinterpret_cast<uintptr_t*>(moduleBaseAddress + 0x10F4F8);
+	count = reinterpret_cast<int*>(moduleBaseAddress + 0x10F500);
 }
 
 std::vector<Game::Player*> Game::EntityList::All()
@@ -32,9 +32,10 @@ std::vector<Game::Player*> Game::EntityList::All()
 
 	// count-1: Count includes localPlayer, which is doesn't have pointer in this struct
 	// count-2: i is start from 0
+	// 0x4 is some wierd padding because AC is cool
 	for (int i = 0; i < (*count - 2); i++)
 	{
-		result.push_back(reinterpret_cast<Game::Player*>(baseAddress + i * sizeof(Game::Player*)));
+		result.push_back(*reinterpret_cast<Game::Player**>(*baseAddress + 0x4 + i * sizeof(Game::Player**)));
 	}
 	return result;
 }
