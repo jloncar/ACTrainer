@@ -18,11 +18,12 @@ using namespace Features;
 
 class Trainer
 {
-typedef void(*FeatureCallback)(const Trainer* trainer, Feature* feature, Game* game);
+typedef void(*FeatureCallback)(const Trainer* trainer, Feature* feature, Game::Engine* game);
 private:
 	Features::Collection* m_Features;
 	std::unordered_map<Features::Feature*, FeatureCallback> m_FeatureCallbacks;
 
+	Game::Engine* m_Game;
 	Overlay* m_Overlay;
 	HWND m_GameWindow;
 
@@ -36,7 +37,7 @@ private:
 	void SetOpenGLContext(HDC hdc);
 
 public:
-		Trainer(HMODULE& hModule, const wchar_t* gameWindowTitle, wglSwapBuffersFunction eventLoop);
+		Trainer(HMODULE& hModule, wglSwapBuffersFunction eventLoop);
 		int Tick(HDC hdc);
 		~Trainer();
 };

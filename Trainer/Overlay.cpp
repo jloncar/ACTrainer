@@ -51,7 +51,7 @@ void Overlay::StartFrame()
     ImGui::NewFrame();
 }
 
-void Overlay::Tick() {
+void Overlay::Menu() {
     ImGui::Begin("Trainer");
     // UI Components
     // Iterate over features                          // Create a window called "Hello, world!" and append into it.

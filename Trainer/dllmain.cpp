@@ -7,7 +7,7 @@ int __stdcall wglSwapBuffersHooked(HDC hdc) {
 
 DWORD WINAPI TrainerThread(HMODULE hModule)
 {
-    trainer = new Trainer(hModule, L"AssaultCube", wglSwapBuffersHooked);
+    trainer = new Trainer(hModule, wglSwapBuffersHooked);
     return 0;
 }
 

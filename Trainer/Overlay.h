@@ -22,7 +22,7 @@ public:
 	Overlay(Features::Collection* features, HWND& parentWindow);
 
 	void Render(Features::Feature* feature);
-	void Tick();
+	void Menu();
 	void StartFrame();
 	void RenderFrame();
 	void HookNavigation();

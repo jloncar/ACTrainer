@@ -1,14 +1,15 @@
 #include "Trainer.h"
 #include "Features.h"
 
-Trainer::Trainer(HMODULE& hModule, const wchar_t* gameWindowTitle, wglSwapBuffersFunction eventLoop)
+Trainer::Trainer(HMODULE& hModule, wglSwapBuffersFunction eventLoop)
 {
-    m_GameWindow = FindWindow(NULL, gameWindowTitle);
+    m_GameWindow = FindWindow(NULL, L"AssaultCube");
 
     // Hook opengl event loop
     uintptr_t wglSwapBuffers = (uintptr_t)GetProcAddress(GetModuleHandle(L"opengl32.dll"), "wglSwapBuffers");
     m_Gateway = (wglSwapBuffersFunction)Memory::TrampolineHook(wglSwapBuffers, eventLoop, 5);
 
+    // Add features
     m_Features = new Features::Collection();
     AddFeature("Freeze Ammo", Features::Feature::Widget::Checkbox, Features::Feature::Group::Core, (FeatureCallback)FreezeAmmo);
     AddFeature("ESP", Features::Feature::Widget::Checkbox, Features::Feature::Group::Core, (FeatureCallback)ESP);
@@ -17,6 +18,8 @@ Trainer::Trainer(HMODULE& hModule, const wchar_t* gameWindowTitle, wglSwapBuffer
     AddFeature("Invulnerability (all)", Features::Feature::Widget::Checkbox, Features::Feature::Group::BotOnly, (FeatureCallback)InvulnerableEveryone);
     AddFeature("Invulnerability (self)", Features::Feature::Widget::Checkbox, Features::Feature::Group::BotOnly, (FeatureCallback)InvulnerableSelf);
 
+    // Setup state
+    m_Game = new Game::Engine();
     m_Overlay = new Overlay(m_Features, m_GameWindow);
 }
 
@@ -28,12 +31,7 @@ void Trainer::AddFeature(std::string name, Features::Feature::Widget widget, Fea
 
 
 int Trainer::Tick(HDC hdc) {
-
-    // 
     SetOpenGLContext(hdc);
-
-    // Handle cheats and do the drawing
-    Game game;
 
 
     m_Overlay->HookNavigation();
@@ -42,13 +40,13 @@ int Trainer::Tick(HDC hdc) {
     {
         try {
             FeatureCallback callback = m_FeatureCallbacks.at(feature);
-            callback(this, feature, &game);
+            callback(this, feature, m_Game);
         } catch (const std::out_of_range& oor) {
             OutputDebugString(L"Unable to find feature.");
             continue;
         }
     }
-    m_Overlay->Tick();
+    m_Overlay->Menu();
     m_Overlay->RenderFrame();
 
 
@@ -102,4 +100,6 @@ void Trainer::SetOpenGLContext(HDC hdc)
 
 Trainer::~Trainer()
 {
+    delete m_Features;
+    delete m_Overlay;
 }
