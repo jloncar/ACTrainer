@@ -1,14 +1,37 @@
 #include "Trainer.h"
-Trainer* trainer;
+Trainer* trainer = nullptr;
+Memory::TrampolineHook* hook = nullptr;
 
 int __stdcall wglSwapBuffersHooked(HDC hdc) {
-    return trainer->Tick(hdc);
+    auto fn = (wglSwapBuffersFunction)hook->Gateway();
+    if (hook->IsEnabled() && trainer != nullptr)
+    {
+        trainer->Tick(hdc);
+        return fn(hdc);
+    }
+    return fn(hdc);
 }
 
 DWORD WINAPI TrainerThread(HMODULE hModule)
 {
-    trainer = new Trainer(hModule, wglSwapBuffersHooked);
-    return 0;
+    trainer = new Trainer(hModule);
+
+    // Hook opengl event loop
+    uintptr_t wglSwapBuffers = (uintptr_t)GetProcAddress(GetModuleHandle(L"opengl32.dll"), "wglSwapBuffers");
+    hook = new Memory::TrampolineHook(wglSwapBuffers, wglSwapBuffersHooked, 5);
+    hook->Enable();
+
+    // Wait for exit event
+    while (!(GetAsyncKeyState(VK_DELETE) & 1))
+    {
+        Sleep(10);
+    }
+
+    // Stop trainer
+    hook->Disable();
+    delete trainer;
+    trainer = nullptr;
+    FreeLibraryAndExitThread(hModule, 0);
 }
 
 

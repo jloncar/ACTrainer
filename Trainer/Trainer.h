@@ -4,6 +4,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <iostream>
 #include <Windows.h>
+#include <libloaderapi.h>
 #include <vector>
 #include <algorithm>
 #include <gl/GL.h>
@@ -27,18 +28,18 @@ private:
 	Overlay* m_Overlay;
 	HWND m_GameWindow;
 
+
 	void AddFeature(std::string name, Features::Feature::Widget widget, Features::Feature::Group group, FeatureCallback callback);
 
 	// OpenGL hooking
-	wglSwapBuffersFunction m_Gateway;
 	bool m_ContextCreated = false;
 	HGLRC m_ContextTrainer;
 	HGLRC m_ContextGame;
 	void SetOpenGLContext(HDC hdc);
 
 public:
-		Trainer(HMODULE& hModule, wglSwapBuffersFunction eventLoop);
-		int Tick(HDC hdc);
+		Trainer(HMODULE& hModule);
+		void Tick(HDC hdc);
 		~Trainer();
 };
 

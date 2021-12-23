@@ -102,19 +102,8 @@ void AddGranade(Game::Engine* game)
 }
 
 
-void DrawESP()
+void DrawESPBox()
 {
-	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration |
-		ImGuiWindowFlags_NoBackground |
-		ImGuiWindowFlags_AlwaysAutoResize |
-		ImGuiWindowFlags_NoBringToFrontOnFocus |
-		ImGuiWindowFlags_NoSavedSettings |
-		ImGuiWindowFlags_NoFocusOnAppearing |
-		ImGuiWindowFlags_NoInputs;
-
-	ImGui::Begin("ESP", nullptr, window_flags);
-
-	ImGui::GetForegroundDrawList()->AddCircle(ImVec2(100, 100), 100 * 0.6f, IM_COL32(0, 255, 0, 200), 0, 10);
-
-	ImGui::End();
+	//ImGui::GetForegroundDrawList()->AddCircle(ImVec2(100, 100), 100 * 0.6f, IM_COL32(0, 255, 0, 200), 0, 10);
+	ImGui::GetForegroundDrawList()->AddRect(ImVec2(100, 100), ImVec2(200, 200), IM_COL32(0, 255, 0, 200), 0, 0, 10);
 }

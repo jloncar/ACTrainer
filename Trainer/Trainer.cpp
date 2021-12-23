@@ -1,13 +1,9 @@
 #include "Trainer.h"
 #include "Features.h"
 
-Trainer::Trainer(HMODULE& hModule, wglSwapBuffersFunction eventLoop)
+Trainer::Trainer(HMODULE& hModule)
 {
     m_GameWindow = FindWindow(NULL, L"AssaultCube");
-
-    // Hook opengl event loop
-    uintptr_t wglSwapBuffers = (uintptr_t)GetProcAddress(GetModuleHandle(L"opengl32.dll"), "wglSwapBuffers");
-    m_Gateway = (wglSwapBuffersFunction)Memory::TrampolineHook(wglSwapBuffers, eventLoop, 5);
 
     // Add features
     m_Features = new Features::Collection();
@@ -30,12 +26,11 @@ void Trainer::AddFeature(std::string name, Features::Feature::Widget widget, Fea
 }
 
 
-int Trainer::Tick(HDC hdc) {
+void Trainer::Tick(HDC hdc) {
     SetOpenGLContext(hdc);
-
-
     m_Overlay->HookNavigation();
     m_Overlay->StartFrame();
+
     for (auto feature : m_Features->All())
     {
         try {
@@ -46,14 +41,12 @@ int Trainer::Tick(HDC hdc) {
             continue;
         }
     }
+
     m_Overlay->Menu();
     m_Overlay->RenderFrame();
 
-
     //Make thread to use games context again
     wglMakeCurrent(hdc, m_ContextGame);
-
-    return m_Gateway(hdc);
 }
 
 
@@ -66,11 +59,10 @@ int Trainer::Tick(HDC hdc) {
 // https://guidedhacking.com/threads/how-to-get-started-with-opengl-hacks.11475/post-98942
 void Trainer::SetOpenGLContext(HDC hdc)
 {
-
     //Save the games context
     m_ContextGame = wglGetCurrentContext();
 
-    //Create our own context if it hasn't been created yet
+    //Create our own context if it hasn't been created yet.
     if (m_ContextCreated == false)
     {
         //Create new context
@@ -97,6 +89,7 @@ void Trainer::SetOpenGLContext(HDC hdc)
     //Make thread use our context
     wglMakeCurrent(hdc, m_ContextTrainer);
 }
+
 
 Trainer::~Trainer()
 {

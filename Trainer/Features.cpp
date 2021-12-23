@@ -48,13 +48,24 @@ void InvulnerableSelf(const Trainer* t, Feature* feature, Game::Engine* game)
 
 void ESP(const Trainer* t, Feature* feature, Game::Engine* game)
 {
-    if (!feature->isEnabled)
+    if (!feature->isEnabled || *game->entities->count <= 1)
         return;
+
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration |
+        ImGuiWindowFlags_NoBackground |
+        ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoBringToFrontOnFocus |
+        ImGuiWindowFlags_NoSavedSettings |
+        ImGuiWindowFlags_NoFocusOnAppearing |
+        ImGuiWindowFlags_NoInputs;
+
+    ImGui::Begin("ESP", nullptr, window_flags);
 
     for (auto player : game->entities->All())
     {
-        continue;
+        DrawESPBox();
+        break;
     }
 
-    DrawESP();
+    ImGui::End();
 }
