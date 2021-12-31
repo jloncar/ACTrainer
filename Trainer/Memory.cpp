@@ -112,7 +112,7 @@ void Memory::TrampolineHook::Enable()
 {
 	m_Enabled = true;
 	// allocate memory
-	// I don't know why Rake used VirtualAlloc - probably to allocate to separate page
+	// I don't know why Rake used VirtualAlloc
 	// byte* gatewayBytes = (byte*)VirtualAlloc(0, sequenceSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	m_Gateway = new byte[m_StolenBytesSize + 1 + sizeof(int)];
 	m_StolenBytes = new byte[m_StolenBytesSize];
@@ -132,6 +132,7 @@ void Memory::TrampolineHook::Enable()
 	// target (start + sequenceSize)
 	// current + x = target
 	// x = target - curent
+	// -5 is because it needs to relative to the begining of jmp
 	int relative_offset = (m_Start + m_StolenBytesSize) - ((uintptr_t)m_Gateway + m_StolenBytesSize) - 5;
 	*((int*)(m_Gateway + m_StolenBytesSize + 1)) = relative_offset;
 
@@ -146,6 +147,9 @@ void Memory::TrampolineHook::Disable()
 	// Free
 	delete[] m_Gateway;
 	delete[] m_StolenBytes;
+
+	m_Gateway = nullptr;
+	m_StolenBytes = nullptr;
 }
 
 void* Memory::TrampolineHook::Gateway()

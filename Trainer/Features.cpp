@@ -63,7 +63,8 @@ void ESP(const Trainer* t, Feature* feature, Game::Engine* game)
 
     for (auto player : game->entities->All())
     {
-        DrawESPBox();
+        OutputDebugStringA(player->Name);
+        DrawESPBox(game->player, player);
         break;
     }
 
