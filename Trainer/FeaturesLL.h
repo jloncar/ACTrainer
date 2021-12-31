@@ -101,6 +101,56 @@ void AddGranade(Game::Engine* game)
 
 }
 
+bool WorldToScreenI(glm::vec3 pos, glm::vec3& screen, float matrix[16], int windowWidth, int windowHeight)
+{
+	//Matrix-vector Product, multiplying world(eye) coordinates by projection matrix = clipCoords
+	glm::vec4 clipCoords;
+	clipCoords.x = pos.x * matrix[0] + pos.y * matrix[4] + pos.z * matrix[8] + matrix[12];
+	clipCoords.y = pos.x * matrix[1] + pos.y * matrix[5] + pos.z * matrix[9] + matrix[13];
+	clipCoords.z = pos.x * matrix[2] + pos.y * matrix[6] + pos.z * matrix[10] + matrix[14];
+	clipCoords.w = pos.x * matrix[3] + pos.y * matrix[7] + pos.z * matrix[11] + matrix[15];
+
+	if (clipCoords.w < 0.1f)
+		return false;
+
+	//perspective division, dividing by clip.W = Normalized Device Coordinates
+	glm::vec3 NDC;
+	NDC.x = clipCoords.x / clipCoords.w;
+	NDC.y = clipCoords.y / clipCoords.w;
+	NDC.z = clipCoords.z / clipCoords.w;
+
+	//Transform to window coordinates
+	screen.x = (windowWidth / 2 * NDC.x) + (NDC.x + windowWidth / 2);
+	screen.y = -(windowHeight / 2 * NDC.y) + (NDC.y + windowHeight / 2);
+	return true;
+}
+
+
+glm::mat4 GetViewProjectionMatrix(Game::Player* player, int windowWidth, int windowHeight)
+{
+	glm::vec3 cameraPosition = glm::vec3(player->positionHead.x, player->positionHead.y, player->positionHead.z);
+	float cameraPitch = glm::radians(player->viewAngles.y);
+	float cameraYaw = glm::radians(player->viewAngles.x);
+	float cameraRoll = glm::radians(player->viewAngles.z);
+
+	glm::mat4 Projection = glm::perspective(45.0f, (float)(windowWidth / windowHeight), 1.0f, 100.0f);
+
+	//FPS camera:  RotationX(pitch) * RotationY(yaw)
+	glm::quat qPitch = glm::angleAxis(cameraPitch, glm::vec3(1, 0, 0));
+	glm::quat qYaw = glm::angleAxis(cameraYaw, glm::vec3(0, 1, 0));
+	glm::quat qRoll = glm::angleAxis(cameraRoll, glm::vec3(0, 0, 1));
+
+	//For a FPS camera we can omit roll
+	glm::quat orientation = qPitch * qYaw;
+	orientation = glm::normalize(orientation);
+	glm::mat4 rotate = glm::mat4_cast(orientation);
+
+	glm::mat4 translate = glm::mat4(1.0f);
+	translate = glm::translate(translate, -cameraPosition);
+
+	return rotate * translate;
+}
+
 
 // It's difficult to find matrix, gotta calculate
 // https://guidedhacking.com/threads/calculate-your-own-viewprojection-matrix.13597/
@@ -141,51 +191,25 @@ void AddGranade(Game::Engine* game)
 // http://glprogramming.com/red/appendixf.html
 // !! https://learnopengl.com/Getting-started/Coordinate-Systems
 // !! http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
-bool WorldToScreen(Game::Player* player, Game::Player* target, glm::vec2& result)
+bool WorldToScreen(Game::Player* player, Game::Player* target, glm::vec3& screenVector)
 {
 	unsigned int windowWidth = 1024;
 	unsigned int windowHeight = 768;
 
-	glm::vec4 targetPosition = glm::vec4(target->positionHead.x, target->positionHead.y, target->positionHead.z, 1.0f);
+	glm::vec3 playerPosition = glm::vec3(player->positionBody.x, player->positionBody.y, player->positionBody.z);
+	glm::vec3 targetPosition = glm::vec3(target->positionHead.x, target->positionHead.y, target->positionHead.z);
 
-	// Resolve from like player object?
-	glm::vec3 cameraPosition = glm::vec3(player->positionHead.x, player->positionHead.y, player->positionHead.z);
-	float cameraPitch = glm::radians(player->viewAngles.y);
-	float cameraYaw = glm::radians(player->viewAngles.x);
-	float cameraRoll = glm::radians(player->viewAngles.z);
+	glm::mat4 projectionMatrix = GetViewProjectionMatrix(player, windowWidth, windowHeight);
+	//float* p_projectionMatrix = glm::value_ptr(projectionMatrix);
+	float* p_projectionMatrix = reinterpret_cast<float*>(0x501AE8);
 
 
-	glm::mat4 Projection = glm::perspective(45.0f, (float)(windowWidth / windowHeight), 1.0f, 100.0f);
-
-	// Build view matrix (camera position, camera rotation)
-	glm::mat4 translate = glm::translate(glm::mat4(), cameraPosition);
-	glm::mat4 rotate_x = glm::rotate(translate, cameraPitch, glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 rotate_y = glm::rotate(translate, cameraYaw, glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 rotate_z = glm::rotate(translate, cameraRoll, glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 model = translate * rotate_z * rotate_y * rotate_x;
-	glm::mat4 View = glm::inverse(model);
-	
-	glm::mat4 ViewProjection = Projection * View;
-
-	// Resolve screen coordinates
-	glm::vec4 screenVector = targetPosition * ViewProjection;
-
-	float scalingFactor = screenVector.w;
-
-	if (scalingFactor <= 0.0f)
-	{
-		return false;
-	}
-
-	result = glm::vec2(	((screenVector.x / scalingFactor) + 1) * 0.5f * windowWidth,
-						((screenVector.y / scalingFactor) + 1) * 0.5f * windowHeight	);
-
-	return true;
+	return WorldToScreenI(targetPosition, screenVector, p_projectionMatrix, windowWidth, windowHeight);
 }
 
 void DrawESPBox(Game::Player* player, Game::Player* target)
 {
-	glm::vec2 screenCoords;
+	glm::vec3 screenCoords;
 
 	bool w2s = WorldToScreen(player, target, screenCoords);
 
