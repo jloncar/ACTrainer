@@ -101,7 +101,7 @@ void AddGranade(Game::Engine* game)
 
 }
 
-bool WorldToScreenI(glm::vec3 pos, glm::vec3& screen, float matrix[16], int windowWidth, int windowHeight)
+bool _WorldToScreen(glm::vec3 pos, glm::vec3& screen, float matrix[16], int windowWidth, int windowHeight)
 {
 	//Matrix-vector Product, multiplying world(eye) coordinates by projection matrix = clipCoords
 	glm::vec4 clipCoords;
@@ -126,33 +126,8 @@ bool WorldToScreenI(glm::vec3 pos, glm::vec3& screen, float matrix[16], int wind
 }
 
 
-glm::mat4 GetViewProjectionMatrix(Game::Player* player, int windowWidth, int windowHeight)
-{
-	glm::vec3 cameraPosition = glm::vec3(player->positionHead.x, player->positionHead.y, player->positionHead.z);
-	float cameraPitch = glm::radians(player->viewAngles.y);
-	float cameraYaw = glm::radians(player->viewAngles.x);
-	float cameraRoll = glm::radians(player->viewAngles.z);
-
-	glm::mat4 Projection = glm::perspective(45.0f, (float)(windowWidth / windowHeight), 1.0f, 100.0f);
-
-	//FPS camera:  RotationX(pitch) * RotationY(yaw)
-	glm::quat qPitch = glm::angleAxis(cameraPitch, glm::vec3(1, 0, 0));
-	glm::quat qYaw = glm::angleAxis(cameraYaw, glm::vec3(0, 1, 0));
-	glm::quat qRoll = glm::angleAxis(cameraRoll, glm::vec3(0, 0, 1));
-
-	//For a FPS camera we can omit roll
-	glm::quat orientation = qPitch * qYaw;
-	orientation = glm::normalize(orientation);
-	glm::mat4 rotate = glm::mat4_cast(orientation);
-
-	glm::mat4 translate = glm::mat4(1.0f);
-	translate = glm::translate(translate, -cameraPosition);
-
-	return rotate * translate;
-}
 
 
-// It's difficult to find matrix, gotta calculate
 // https://guidedhacking.com/threads/calculate-your-own-viewprojection-matrix.13597/
 // This video solves it for AC, but it's tricky in other games.
 // https://guidedhacking.com/threads/how-to-get-started-with-learning-viewmatrix.13663/
@@ -191,35 +166,48 @@ glm::mat4 GetViewProjectionMatrix(Game::Player* player, int windowWidth, int win
 // http://glprogramming.com/red/appendixf.html
 // !! https://learnopengl.com/Getting-started/Coordinate-Systems
 // !! http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
-bool WorldToScreen(Game::Player* player, Game::Player* target, glm::vec3& screenVector)
-{
-	unsigned int windowWidth = 1024;
-	unsigned int windowHeight = 768;
 
+bool WorldToScreen(Game::Player* player, Game::Player* target, glm::vec3& screenVector, const int windowWidth, const int windowHeight)
+{
 	glm::vec3 playerPosition = glm::vec3(player->positionBody.x, player->positionBody.y, player->positionBody.z);
 	glm::vec3 targetPosition = glm::vec3(target->positionHead.x, target->positionHead.y, target->positionHead.z);
 
-	glm::mat4 projectionMatrix = GetViewProjectionMatrix(player, windowWidth, windowHeight);
-	//float* p_projectionMatrix = glm::value_ptr(projectionMatrix);
 	float* p_projectionMatrix = reinterpret_cast<float*>(0x501AE8);
+	
+	return _WorldToScreen(targetPosition, screenVector, p_projectionMatrix, windowWidth, windowHeight);
+}
 
 
-	return WorldToScreenI(targetPosition, screenVector, p_projectionMatrix, windowWidth, windowHeight);
+void ResolveBoundingRectangleCoords(const glm::vec3& screenCoords, const float distance, const int windowWidth, const int windowHeight, ImVec2& start, ImVec2& end)
+{
+	const float playerModelAspectRation = 2.5;
+	const float boxSize = 500;
+	const float scaler = (boxSize / distance) * (windowWidth/768);
+
+	start	= ImVec2(screenCoords.x - scaler, screenCoords.y - scaler);
+	end		= ImVec2(screenCoords.x + scaler * 2, screenCoords.y + scaler * playerModelAspectRation * 2);
 }
 
 void DrawESPBox(Game::Player* player, Game::Player* target)
 {
+	const int windowWidth = 1024;
+	const int windowHeight = 768;
+
 	glm::vec3 screenCoords;
 
-	bool w2s = WorldToScreen(player, target, screenCoords);
+	bool w2s = WorldToScreen(player, target, screenCoords, windowWidth, windowHeight);
 
 	if (!w2s)
 	{
 		return;
 	}
 
-	//ImGui::GetForegroundDrawList()->AddCircle(ImVec2(100, 100), 100 * 0.6f, IM_COL32(0, 255, 0, 200), 0, 10);
-	ImGui::GetForegroundDrawList()->AddRect(ImVec2(screenCoords.x, screenCoords.y),
-		ImVec2(screenCoords.x + 100, screenCoords.y + 100),
-		IM_COL32(0, 255, 0, 200), 0, 0, 3);
+	const float distance = glm::abs(glm::distance(	glm::vec3(player->positionBody.x, player->positionBody.y, player->positionBody.z),
+													glm::vec3(target->positionBody.x, target->positionBody.y, target->positionBody.z)));
+
+	ImVec2 start;
+	ImVec2 end;
+	ResolveBoundingRectangleCoords(screenCoords, distance, windowWidth, windowHeight, start, end);
+
+	ImGui::GetForegroundDrawList()->AddRect(start, end, IM_COL32(0, 255, 0, 200), 0, 0, 3);
 }

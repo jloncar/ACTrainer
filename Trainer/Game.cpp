@@ -33,7 +33,7 @@ std::vector<Game::Player*> Game::EntityList::All()
 	// count-1: Count includes localPlayer, which is doesn't have pointer in this struct
 	// count-2: i is start from 0
 	// 0x4 is some wierd padding because AC is cool
-	for (int i = 0; i < (*count - 2); i++)
+	for (int i = 0; i < (*count - 1); i++)
 	{
 		result.push_back(*reinterpret_cast<Game::Player**>(*baseAddress + 0x4 + i * sizeof(Game::Player**)));
 	}
